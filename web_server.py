@@ -1,60 +1,23 @@
-import network
-import socket
-import time
+from dependencies.microdot import Microdot
+import sys
+from dependencies.wifi_connector import Wifi_Connector
 
-# WiFi credentials
-SSID = 'DALEWOOD_5G'
-PASSWORD = 'F@RG0000'
+_WIFI_CONNECTOR = Wifi_Connector()
 
-# Connect to WiFi
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect(SSID, PASSWORD)
+def web_server():
 
-print("Connecting to WiFi...")
-while not wlan.isconnected() and wlan.status() >= 0:
-    print(".", end="")
-    time.sleep(1)
+    global _WIFI_CONNECTOR
+    if not (_WIFI_CONNECTOR.connect()):
+        print(f"wireless connection failed")
+        sys.exit()
 
-print("\nConnected to WiFi!")
-print("IP Address:", wlan.ifconfig()[0])
+    app = Microdot()
 
-# HTML response
-html = """\
-HTTP/1.1 200 OK
-Content-Type: text/html
+    @app.route('/')
+    def index(request):
+        return 'Hello, World!'
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Pico W Web Server</title>
-</head>
-<body>
-    <h1>Hello, World!</h1>
-    <p>This is a web server running on Raspberry Pi Pico W.</p>
-</body>
-</html>
-"""
+    app.run(port=5000, debug=True)
 
-# Setup socket
-addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
-s = socket.socket()
-s.bind(addr)
-s.listen(1)
-
-print("Listening on", addr)
-
-# Listen for connections
-while True:
-    try:
-        conn, addr = s.accept()
-        print("Client connected from", addr)
-        request = conn.recv(1024)
-        print("Request:", request)
-
-        conn.send(html)
-        conn.close()
-
-    except Exception as e:
-        print("Error:", e)
-        conn.close()
+if __name__ == '__main__':
+    web_server()
