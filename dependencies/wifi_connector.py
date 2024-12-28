@@ -1,6 +1,16 @@
 import network
 import time
 
+"""
+Connects your micropico to wifi based based off of entered password and ssid.
+Set password = your internet password
+Set ssid = your internet ssid (internet name)
+
+and you will be able to connect to the internet 
+
+author: Dylan O'Connor
+"""
+
 class Wifi_Connector:
     def __init__(self, password='F@RG0000', ssid='DALEWOOD_5G') -> None:
         self.ssid = ssid

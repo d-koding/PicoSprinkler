@@ -1,8 +1,9 @@
 from dependencies.microdot import Microdot
 import sys
 from dependencies.wifi_connector import Wifi_Connector
+import ssl
 
-_WIFI_CONNECTOR = Wifi_Connector()
+_WIFI_CONNECTOR = Wifi_Connector() # current defaults to my wifi and password, can chance ssid and password here by updating initialization
 
 def web_server():
 
