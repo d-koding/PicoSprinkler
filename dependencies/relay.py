@@ -1,9 +1,16 @@
 from microdot import Microdot
 import machine
 
+"""
+Relay class controls pins on Pico W, turning them off and on as well as
+saving the status of those pins 
+
+author: Dylan O'Connor
+"""
+
 class Relay:
     def __init__(self, pinTag="LED", status="Off"):
-        self._pinTag = pinTag # refers to the name fo the pin on the pico
+        self._pinTag = pinTag # refers to the name of the pin on the pico
         self._status = status
     
     def turn_on(self):
