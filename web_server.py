@@ -32,32 +32,34 @@ def web_server():
     app = Microdot()
 
     @app.route('/activate_pin/<pin_tag>', methods=['GET'])
-    def activate_pin(request, pin_tag):
+    async def activate_pin(request, pin_tag):
 
         print(f"Received request to activate pin: {pin_tag}")
 
-        print(type(pin_tag))
         if pin_tag != "LED":
             pin_tag = int(pin_tag)
         
-        led = _RELAY_MAP.get(pin_tag)
+        pin = _RELAY_MAP.get(pin_tag)
         
-        if led is not None:
-            led.turn_on()
+        if pin is not None:
+            pin.turn_on()
             return f"Successfully activated pin {pin_tag}", 200
 
         error_message = f"Error: {pin_tag} does not exist"
         print(error_message)
         return error_message, 404
 
-    @app.route('/deactivate_pin/<pin_tag>')
-    def deactivate_pin(request, pin_tag):
+    @app.route('/deactivate_pin/<pin_tag>', methods=['GET'])
+    async def deactivate_pin(request, pin_tag):
         print(f"Received request to activate pin: {pin_tag}")
+
+        if pin_tag != "LED":
+            pin_tag = int(pin_tag)
         
-        led = _RELAY_MAP.get(pin_tag)
+        pin = _RELAY_MAP.get(pin_tag)
         
-        if led is not None:
-            led.turn_off()
+        if pin is not None:
+            pin.turn_off()
             return f"Successfully deactivated pin {pin_tag}", 200
 
         error_message = f"Error: {pin_tag} does not exist"
@@ -65,13 +67,16 @@ def web_server():
         return error_message, 404
 
     @app.route('/status/<pin_tag>')
-    def get_status(request, pin_tag):
+    async def get_status(request, pin_tag):
         print(f"Received request to get pin status: {pin_tag}")
 
-        led = _RELAY_MAP.get(pin_tag)
+        if pin_tag != "LED":
+            pin_tag = int(pin_tag)
 
-        if led != None:
-            return led.status(), 200 # assume all pins have a status
+        pin = _RELAY_MAP.get(pin_tag)
+
+        if pin != None:
+            return pin.status(), 200 # assume all pins have a status
         
         else:
             error_message = f"Error: {pin_tag} does not exist"
@@ -79,7 +84,7 @@ def web_server():
     
     # ERROR HANDLERS
     @app.errorhandler(404)
-    def not_found(request):
+    async def not_found(request):
         return {'error': 'resource not found'}, 404
 
 
