@@ -28,8 +28,6 @@ class ForecastAnalyzer:
                 self._latitude = config.get('latitude')
                 self._longitude = config.get('longitude')
                 print(f"Config loaded: ZIP Code: {self._zipcode}, Latitude: {self._latitude}, Longitude: {self._longitude}")
-        except FileNotFoundError:
-            print(f"Config file {self.config_file} not found. Using defaults.")
         except Exception as e:
             print(f"Error loading config: {e}")
 
@@ -78,14 +76,19 @@ class ForecastAnalyzer:
         if not self._latitude or not self._longitude:
             print("Latitude and longitude are not set. Please resolve them first.")
             return
+        
         weather_url = f"https://api.weather.gov/points/{self._latitude},{self._longitude}"
+        headers = {
+            "User-Agent": "MyWeatherApp/1.0 (https://myweatherapp.com; contact@myweatherapp.com)"
+        }
+        
         try:
             print("Fetching weather data from NWS...")
-            response = urequests.get(weather_url)
+            response = urequests.get(weather_url, headers=headers)
             if response.status_code == 200:
                 data = response.json()
                 forecast_url = data['properties']['forecast']
-                forecast_response = urequests.get(forecast_url)
+                forecast_response = urequests.get(forecast_url, headers=headers)
                 if forecast_response.status_code == 200:
                     forecast_data = forecast_response.json()
                     tomorrow_forecast = forecast_data['properties']['periods'][1]  # Tomorrow's forecast
@@ -97,6 +100,7 @@ class ForecastAnalyzer:
         except Exception as e:
             print(f"Error fetching weather data: {e}")
 
+    # FIX WITH USER AGENT HEADER
     def fetch_weather_next_week(self):
         if not self._latitude or not self._longitude:
             print("Latitude and longitude are not set. Please resolve them first.")
