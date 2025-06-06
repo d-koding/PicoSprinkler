@@ -18,6 +18,12 @@ notes for code cleanup:
 
 why not just normalize the typing of the pin tags being sent in? All strings. 
 
+MAKE AN ON BOOTUP FUNCTION:
+Whenever we boot up:
+Connect to the internet
+Turn off all relays -> Due to the persistent memory of relay states saved on the Pico-Relay-B
+Sync Time Properly
+
 author: Dylan O'Connor
 """
 
@@ -242,13 +248,13 @@ async def schedule_checker():
         print(f"Current Local Time: {current_date_str} {current_hour:02d}:{current_minute:02d} ({current_day_name})")
 
         for pin_tag, schedule_data in _SCHEDULES.items():
+            if pin_tag != "LED":
+                pin_tag = int(pin_tag)
+
             if pin_tag not in _RELAY_MAP:
                 continue 
             
-            if pin_tag != "LED":
-                relay = _RELAY_MAP[int(pin_tag)]
-            else:
-                relay = _RELAY_MAP[pin_tag]
+            relay = _RELAY_MAP[pin_tag]
 
             scheduled_days = schedule_data.get("days", [])
             turn_on_str = schedule_data.get("turn_on_time")
@@ -264,20 +270,19 @@ async def schedule_checker():
                     continue
 
                 # Check for turn ON event
-                print("checked for turn on event, on " + str(on_hour) + " " + str(on_minute) + " found that the time was " + str(current_hour) + " " + str(current_minute))
                 if current_hour == on_hour and current_minute == on_minute:
                     ("turning on")
                     if last_triggered_date != current_date_str: 
                         if relay.status() == "Off":
                             relay.turn_on()
-                            _SCHEDULES[pin_tag]["last_triggered_date"] = current_date_str
+                            _SCHEDULES[str(pin_tag)]["last_triggered_date"] = current_date_str
                             save_schedules()
                             print(f"Scheduled ON for {pin_tag} at {current_date_str} {turn_on_str}")
                 # Check for turn OFF event
                 elif current_hour == off_hour and current_minute == off_minute:
                     if relay.status() == "On":
                         relay.turn_off()
-                        _SCHEDULES[pin_tag]["last_triggered_date"] = current_date_str
+                        _SCHEDULES[str(pin_tag)]["last_triggered_date"] = current_date_str
                         save_schedules()
                         print(f"Scheduled OFF for {pin_tag} at {current_date_str} {turn_off_str}")
 
@@ -293,7 +298,7 @@ async def schedule_checker():
                 # For simplicity here, assuming on_time <= off_time on the same day for a single event.
                 # If spanning midnight, logic would need to be more complex.
                 if current_minutes_since_midnight > max(on_minutes_since_midnight, off_minutes_since_midnight):
-                    _SCHEDULES[pin_tag]["last_triggered_date"] = "" # Reset
+                    _SCHEDULES[str(pin_tag)]["last_triggered_date"] = "" # Reset
                     save_schedules()
                     print(f"Resetting schedule for {pin_tag} for next day.")
 
