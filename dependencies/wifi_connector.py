@@ -71,6 +71,29 @@ class Wifi_Connector:
         # Fallback return (should be caught by the loop)
         print("Failed to connect.")
         return False
+    
+    def get_ip_address(self) -> str | None:
+        """
+        Returns the IP address if connected, otherwise None.
+        """
+        if self.wlan.isconnected():
+            return self.wlan.ifconfig()[0]
+        return None
+
+    def get_network_info(self) -> tuple | None:
+        """
+        Returns the full network configuration tuple (IP, Subnet, Gateway, DNS)
+        if connected, otherwise None.
+        """
+        if self.wlan.isconnected():
+            return self.wlan.ifconfig()
+        return None
+
+    def is_connected(self) -> bool:
+        """
+        Checks if the WiFi connection is currently active.
+        """
+        return self.wlan.isconnected()
 
 # Example usage in main.py:
 # if __name__ == '__main__':
